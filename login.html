@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela de Login</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1612537786199-1c202c6dcfd2?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .login-option {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            padding: 8px;
+            border: 2px solid #007BFF;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .login-option:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        .selected {
+            background-color: rgba(0, 123, 255, 0.3);
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 20px);
+            max-width: 260px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        input[disabled] {
+            background-color: #ddd;
+            color: #aaa;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .logo {
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        #feedback p {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const checkbox = document.getElementById('show-password');
+            passwordInput.type = checkbox.checked ? 'text' : 'password';
+        }
+
+        function selectOption(option) {
+            const options = document.querySelectorAll('.login-option');
+            options.forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            option.classList.add('selected');
+
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            if (option.innerText === 'Sem Login') {
+                emailInput.disabled = true;
+                passwordInput.disabled = true;
+                emailInput.style.backgroundColor = '#ddd';
+                passwordInput.style.backgroundColor = '#ddd';
+            } else {
+                emailInput.disabled = false;
+                passwordInput.disabled = false;
+                emailInput.style.backgroundColor = '';
+                passwordInput.style.backgroundColor = '';
+            }
+        }
+
+        function enviarLogin(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+            
+            const selectedOption = document.querySelector('.login-option.selected');
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('password').value;
+
+            if (selectedOption && selectedOption.innerText === 'Sem Login') {
+                // Se a opção "Sem Login" foi selecionada, não faz a autenticação
+                alert("Você está logado como visitante. Acesse o diagnóstico sem login.");
+                // Redirecionar para a página de diagnóstico sem login, se necessário
+                window.location.href = '/diagnostico_sem_login';
+                return;
+            }
+
+            // Se não for "Sem Login", procede com a autenticação
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email, senha: senha })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro no login');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                alert(data.message || 'Login bem-sucedido!');
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao fazer login. Verifique suas credenciais.');
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="login-container">
+        <img src="https://i.postimg.cc/CKJwQxwG/minhia-1-removebg-preview.png" alt="Logo" class="logo">
+
+        <!-- Opções de login -->
+        <div class="login-option" onclick="selectOption(this)">Administrador</div>
+        <div class="login-option" onclick="selectOption(this)">Usuário</div>
+        <div class="login-option" onclick="selectOption(this)">Sem Login</div>
+
+        <!-- Formulário de login -->
+        <form method="POST" onsubmit="enviarLogin(event)">
+            <input type="text" id="email" name="email" placeholder="E-mail" required>
+            <input type="password" id="password" name="senha" placeholder="Senha" required>
+            
+            <div class="checkbox-label">
+                <input type="checkbox" id="show-password" onclick="togglePasswordVisibility()">
+                <label for="show-password" style="margin-left: 5px;">Mostrar senha</label>
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+
+        <div id="feedback"></div>
+    </div>
+</body>
+</html>

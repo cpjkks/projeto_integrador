@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Sem Login</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1612537786199-1c202c6dcfd2?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .diagnostic-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .input-field,
+        select {
+            width: calc(100% - 20px);
+            max-width: 260px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .range-container {
+            width: calc(100% - 20px);
+            max-width: 260px;
+            margin: 10px 0;
+            text-align: left;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .range-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(to right, blue, red);
+            outline: none;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #fff;
+            border: 2px solid #666;
+            cursor: pointer;
+        }
+
+        .pain-level-display {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-button {
+            background-color: #FF6347;
+        }
+
+        .back-button:hover {
+            background-color: #d44a2b;
+        }
+
+        .warning-message {
+            font-size: 14px;
+            color: #b22222;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        function updatePainLevel(value) {
+            const painDisplay = document.getElementById('pain-level');
+            const painColor = `rgb(${value * 25.5}, 0, ${255 - value * 25.5})`; // Gradiente de azul para vermelho
+            painDisplay.innerText = value;
+            painDisplay.style.color = painColor;
+        }
+
+        function enviarDiagnostico(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+            
+            const localDor = document.getElementById('local_dor').value;
+            const tipoSintoma = document.getElementById('tipo_sintoma').value;
+            const nivelDor = document.getElementById('nivel_dor').value;
+
+            fetch('/diagnostico_sem_login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ local_dor: localDor, tipo_sintoma: tipoSintoma, nivel_dor: nivelDor })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(`Diagnóstico: ${data.diagnostico}`);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao processar o diagnóstico.');
+            });
+        }
+
+        function voltarLogin() {
+            window.location.href = '/';
+        }
+    </script>
+</head>
+<body>
+    <div class="diagnostic-container">
+        <h2>Diagnóstico</h2>
+        <div class="warning-message">
+            Este diagnóstico é indicado para utilização como diagnósticos iniciais. Para ter certeza do que possui, procure um MÉDICO.
+        </div>
+        <form onsubmit="enviarDiagnostico(event)">
+            <select id="local_dor" class="input-field" required>
+                <option value="">Onde sente a dor?</option>
+                <option value="cabeça">Cabeça</option>
+                <option value="ouvido">Ouvido</option>
+                <option value="olhos">Olhos</option>
+                <option value="abdômen">Abdômen</option>
+                <option value="outro">Outro (especifique abaixo)</option>
+            </select>
+
+            <select id="tipo_sintoma" class="input-field" required>
+                <option value="">O que você está sentindo?</option>
+                <option value="enxaqueca">Enxaqueca</option>
+                <option value="otite">Otite</option>
+                <option value="cansaço">Cansaço</option>
+                <option value="fraqueza">Fraqueza</option>
+                <option value="tontura">Tontura</option>
+                <option value="febre">Febre</option>
+                <option value="tosse">Tosse</option>
+                <option value="outro">Outro (especifique abaixo)</option>
+            </select>
+
+            <div class="range-container">
+                <label for="nivel_dor">De 0 a 10, defina o nível de dor:</label>
+                <input type="range" id="nivel_dor" min="0" max="10" value="0" oninput="updatePainLevel(this.value)">
+                <div class="pain-level-display">Nível de dor: <span id="pain-level" style="color: blue;">0</span></div>
+            </div>
+
+            <button type="submit">Realizar Diagnóstico</button>
+            <button type="button" class="back-button" onclick="voltarLogin()">Voltar ao Login</button>
+        </form>
+    </div>
+</body>
+</html>
