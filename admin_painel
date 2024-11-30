@@ -1,0 +1,186 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://images.unsplash.com/photo-1612537786199-1c202c6dcfd2?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #333;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #0056b3;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        main {
+            padding: 30px;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, button {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        input:focus, button:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .alert.success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert.error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #007BFF;
+            border: 1px solid #007BFF;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #e2e6ea;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Painel Administrativo</h1>
+    </header>
+    <main>
+        <form id="form-adicionar-dados">
+            <label for="sintoma">Sintoma:</label>
+            <input type="text" id="sintoma" name="sintoma" placeholder="Digite o sintoma" required>
+
+            <label for="parteCorpo">Parte do Corpo:</label>
+            <input type="text" id="parteCorpo" name="parteCorpo" placeholder="Exemplo: Braço, Cabeça" required>
+
+            <label for="intensidade">Intensidade (0-10):</label>
+            <input type="number" id="intensidade" name="intensidade" min="0" max="10" placeholder="Exemplo: 5" required>
+
+            <label for="diagnostico">Diagnóstico:</label>
+            <input type="text" id="diagnostico" name="diagnostico" placeholder="Digite o diagnóstico" required>
+
+            <button type="submit">Salvar Dados</button>
+        </form>
+
+        <div id="alert" class="alert"></div>
+
+        <button class="btn-back" onclick="window.location.href='/'">Voltar para Login</button>
+    </main>
+    <footer>
+        &copy; 2024 Painel Administrativo - Sistema Médico
+    </footer>
+    <script>
+        document.getElementById('form-adicionar-dados').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const dados = {
+                sintoma: document.getElementById('sintoma').value.trim(),
+                parteCorpo: document.getElementById('parteCorpo').value.trim(),
+                intensidade: parseInt(document.getElementById('intensidade').value),
+                diagnostico: document.getElementById('diagnostico').value.trim()
+            };
+
+            const alertDiv = document.getElementById('alert');
+            alertDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/adicionar_dados', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alertDiv.className = 'alert success';
+                    alertDiv.textContent = resultado.message;
+                } else {
+                    alertDiv.className = 'alert error';
+                    alertDiv.textContent = resultado.error || 'Erro ao salvar dados.';
+                }
+            } catch (error) {
+                alertDiv.className = 'alert error';
+                alertDiv.textContent = 'Erro ao conectar ao servidor.';
+            }
+
+            alertDiv.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
