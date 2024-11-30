@@ -55,12 +55,6 @@
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        input[disabled] {
-            background-color: #ddd;
-            color: #aaa;
         }
 
         .checkbox-label {
@@ -96,6 +90,15 @@
             color: red;
             font-size: 14px;
         }
+
+        .back-button {
+            margin-top: 10px;
+            background-color: #6c757d;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
     </style>
     <script>
         function togglePasswordVisibility() {
@@ -106,63 +109,50 @@
 
         function selectOption(option) {
             const options = document.querySelectorAll('.login-option');
-            options.forEach(opt => {
-                opt.classList.remove('selected');
-            });
+            options.forEach(opt => opt.classList.remove('selected'));
             option.classList.add('selected');
 
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
+            const isGuest = option.getAttribute('data-role') === 'guest';
 
-            if (option.innerText === 'Sem Login') {
-                emailInput.disabled = true;
-                passwordInput.disabled = true;
-                emailInput.style.backgroundColor = '#ddd';
-                passwordInput.style.backgroundColor = '#ddd';
-            } else {
-                emailInput.disabled = false;
-                passwordInput.disabled = false;
-                emailInput.style.backgroundColor = '';
-                passwordInput.style.backgroundColor = '';
-            }
+            emailInput.disabled = isGuest;
+            passwordInput.disabled = isGuest;
+            emailInput.style.backgroundColor = isGuest ? '#ddd' : '';
+            passwordInput.style.backgroundColor = isGuest ? '#ddd' : '';
         }
 
         function enviarLogin(event) {
-            event.preventDefault(); // Impede o envio padrão do formulário
-            
+            event.preventDefault();
             const selectedOption = document.querySelector('.login-option.selected');
+            const role = selectedOption.getAttribute('data-role');
             const email = document.getElementById('email').value;
             const senha = document.getElementById('password').value;
 
-            if (selectedOption && selectedOption.innerText === 'Sem Login') {
-                // Se a opção "Sem Login" foi selecionada, não faz a autenticação
-                alert("Você está logado como visitante. Acesse o diagnóstico sem login.");
-                // Redirecionar para a página de diagnóstico sem login, se necessário
-                window.location.href = '/diagnostico_sem_login';
+            if (role === 'admin') {
+                window.location.href = '/admin_painel'; // Redireciona ao painel de administrador
                 return;
             }
 
-            // Se não for "Sem Login", procede com a autenticação
+            if (role === 'guest') {
+                window.location.href = '/diagnostico_sem_login'; // Redireciona ao diagnóstico sem login
+                return;
+            }
+
             fetch('/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email: email, senha: senha })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, senha, role })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro no login');
-                }
+                if (!response.ok) throw new Error('Erro no login');
                 return response.json();
             })
             .then(data => {
-                console.log(data);
-                alert(data.message || 'Login bem-sucedido!');
+                document.getElementById('feedback').innerHTML = `<p>${data.message || 'Login bem-sucedido!'}</p>`;
             })
             .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao fazer login. Verifique suas credenciais.');
+                document.getElementById('feedback').innerHTML = `<p>Erro: ${error.message}</p>`;
             });
         }
     </script>
@@ -170,24 +160,18 @@
 <body>
     <div class="login-container">
         <img src="https://i.postimg.cc/CKJwQxwG/minhia-1-removebg-preview.png" alt="Logo" class="logo">
-
-        <!-- Opções de login -->
-        <div class="login-option" onclick="selectOption(this)">Administrador</div>
-        <div class="login-option" onclick="selectOption(this)">Usuário</div>
-        <div class="login-option" onclick="selectOption(this)">Sem Login</div>
-
-        <!-- Formulário de login -->
+        <div class="login-option" onclick="selectOption(this)" data-role="admin">Administrador</div>
+        <div class="login-option" onclick="selectOption(this)" data-role="guest">Sem Login</div>
         <form method="POST" onsubmit="enviarLogin(event)">
             <input type="text" id="email" name="email" placeholder="E-mail" required>
             <input type="password" id="password" name="senha" placeholder="Senha" required>
-            
             <div class="checkbox-label">
                 <input type="checkbox" id="show-password" onclick="togglePasswordVisibility()">
                 <label for="show-password" style="margin-left: 5px;">Mostrar senha</label>
             </div>
             <button type="submit">Entrar</button>
         </form>
-
+        <button type="button" class="back-button" onclick="window.location.href='/'">Voltar</button>
         <div id="feedback"></div>
     </div>
 </body>
