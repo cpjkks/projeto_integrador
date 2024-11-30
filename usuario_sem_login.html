@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuário Sem Login</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1612537786199-1c202c6dcfd2?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            width: 320px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #007BFF;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="range"] {
+            appearance: none;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #007BFF;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #intensidade-valor {
+            font-size: 14px;
+            color: #333;
+        }
+
+        #mensagem {
+            margin-top: 10px;
+            font-size: 14px;
+            color: green;
+        }
+
+        .back-button {
+            margin-top: 10px;
+            background-color: #6c757d;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Informar Sintomas</h2>
+        <form id="sintoma-form">
+            <label for="sintoma">Sintoma:</label>
+            <input type="text" id="sintoma" name="sintoma" placeholder="Ex: dor, cansaço..." list="sintomas">
+            <datalist id="sintomas">
+                <option value="Dor"></option>
+                <option value="Cansaço"></option>
+                <option value="Tontura"></option>
+            </datalist>
+            
+            <label for="parte-corpo">Parte do corpo:</label>
+            <input type="text" id="parte-corpo" name="parte-corpo" placeholder="Ex: cabeça, braço..." list="partes">
+            <datalist id="partes">
+                <option value="Cabeça"></option>
+                <option value="Braço"></option>
+                <option value="Pernas"></option>
+            </datalist>
+
+            <label for="intensidade">Intensidade:</label>
+            <input type="range" id="intensidade" name="intensidade" min="0" max="10" step="1" value="5">
+            <span id="intensidade-valor">5</span>
+
+            <button type="submit">Enviar</button>
+        </form>
+        <button type="button" class="back-button" onclick="window.location.href='/'">Voltar</button>
+        <p id="mensagem"></p>
+        <p id="diagnostico"></p>
+    </div>
+
+    <script>
+        const intensidadeInput = document.getElementById("intensidade");
+        const intensidadeValor = document.getElementById("intensidade-valor");
+        intensidadeInput.addEventListener("input", () => {
+            intensidadeValor.textContent = intensidadeInput.value;
+        });
+
+        document.getElementById("sintoma-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const dados = {
+                sintoma: document.getElementById("sintoma").value,
+                parteCorpo: document.getElementById("parte-corpo").value,
+                intensidade: document.getElementById("intensidade").value,
+            };
+
+            const response = await fetch("/api/prever_diagnostico", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dados),
+            });
+
+            const resultado = await response.json();
+
+            if (resultado.diagnostico) {
+                document.getElementById("diagnostico").textContent = "Diagnóstico: " + resultado.diagnostico;
+                document.getElementById("mensagem").textContent = "Seu diagnóstico foi encontrado com sucesso!";
+            } else {
+                document.getElementById("mensagem").textContent = "Erro ao enviar os dados. Por favor, tente novamente.";
+            }
+        });
+    </script>
+</body>
+</html>
