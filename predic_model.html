@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prever Diagnóstico</title>
+    <script>
+        // Função JavaScript para enviar os dados do formulário via AJAX
+        function enviarFormulario() {
+            const sintoma = document.getElementById('sintoma').value;
+            const parteCorpo = document.getElementById('parteCorpo').value;
+            const intensidade = document.getElementById('intensidade').value;
+
+            const dados = {
+                sintoma: sintoma,
+                parteCorpo: parteCorpo,
+                intensidade: parseInt(intensidade)
+            };
+
+            fetch('/api/prever_diagnostico', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.diagnostico) {
+                    alert("Diagnóstico: " + data.diagnostico);
+                } else {
+                    alert("Erro: " + data.error);
+                }
+            })
+            .catch(error => alert('Erro ao enviar os dados: ' + error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Previsão de Diagnóstico</h1>
+    <form onsubmit="event.preventDefault(); enviarFormulario();">
+        <label for="sintoma">Sintoma:</label><br>
+        <input type="text" id="sintoma" name="sintoma" required><br><br>
+
+        <label for="parteCorpo">Parte do Corpo:</label><br>
+        <input type="text" id="parteCorpo" name="parteCorpo" required><br><br>
+
+        <label for="intensidade">Intensidade (1-10):</label><br>
+        <input type="number" id="intensidade" name="intensidade" required min="1" max="10"><br><br>
+
+        <button type="submit">Prever Diagnóstico</button>
+    </form>
+</body>
+</html>
